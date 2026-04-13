@@ -19,4 +19,5 @@ backend/uploads/
 .vscode/
 .DS_Store
 
-# Env / secrets — application.properties is safe now (uses env vars)
+# Env / secrets
+backend/src/main/resources/application.properties
