@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import toast from 'react-hot-toast';
 import { Icon } from '../components/Icons';
@@ -10,6 +11,7 @@ export default function Templates() {
   const [selected, setSelected] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
 
   const load = () => api.get('/templates').then(r => setTemplates(r.data));
   useEffect(() => { load(); }, []);
@@ -40,6 +42,16 @@ export default function Templates() {
     load();
   };
 
+  const useInBroadcast = (t) => {
+    // Store template in sessionStorage so Broadcast page can pick it up
+    sessionStorage.setItem('broadcast_template', JSON.stringify({
+      subject: t.subject,
+      body: t.body
+    }));
+    toast.success('Template loaded in Broadcast');
+    navigate('/broadcast');
+  };
+
   return (
     <div>
       <div className="page-header">
@@ -51,18 +63,26 @@ export default function Templates() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
         {templates.map(t => (
-          <div key={t.id} className="card">
+          <div key={t._id} className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
               <span className={`badge badge-${t.occasion?.toLowerCase()}`}>{t.occasion}{t.festivalName ? ` — ${t.festivalName}` : ''}</span>
               <div style={{ display: 'flex', gap: 6 }}>
                 <button className="btn btn-outline" style={{ padding: '3px 10px' }} onClick={() => openEdit(t)}>Edit</button>
-                <button className="btn btn-danger" style={{ padding: '3px 10px' }} onClick={() => handleDelete(t.id)}>Del</button>
+                <button className="btn btn-danger" style={{ padding: '3px 10px' }} onClick={() => handleDelete(t._id)}>Del</button>
               </div>
             </div>
             <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>{t.subject}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14 }}>
               Placeholders: <code>{'{CustomerName}'}</code> <code>{'{Offer}'}</code>
             </div>
+            <button
+              className="btn btn-primary"
+              style={{ width: '100%', fontSize: 13 }}
+              onClick={() => useInBroadcast(t)}
+            >
+              <Icon name="broadcast" size={13} color="white" />
+              Use in Broadcast
+            </button>
           </div>
         ))}
       </div>

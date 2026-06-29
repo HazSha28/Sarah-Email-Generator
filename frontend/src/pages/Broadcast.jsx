@@ -20,6 +20,14 @@ export default function Broadcast() {
 
   useEffect(() => {
     api.get('/customers').then(r => setCustomerCount(r.data.length));
+    // Check if a template was passed from Templates page
+    const stored = sessionStorage.getItem('broadcast_template');
+    if (stored) {
+      const t = JSON.parse(stored);
+      setSubject(t.subject);
+      setBody(t.body);
+      sessionStorage.removeItem('broadcast_template');
+    }
   }, []);
 
   const applyTemplate = async (festival) => {
