@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const api = axios.create({ baseURL: 'http://localhost:8080/api' });
+const api = axios.create({ baseURL: 'https://sarah-email-generator-1.onrender.com/api' });
 
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token');

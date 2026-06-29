@@ -26,7 +26,7 @@ export default function EmailEditor({ draft, onClose, onSaved }) {
     fd.append('file', file);
     try {
       const res = await api.post('/emails/upload-image', fd);
-      const url = `http://localhost:8080${res.data.url}`;
+      const url = `https://sarah-email-generator-1.onrender.com${res.data.url}`;
       setImageUrl(url);
       setBody(prev => prev + `<br/><img src="${url}" alt="promo" style="max-width:100%;border-radius:8px;margin-top:12px;" />`);
       toast.success('Image added to email');

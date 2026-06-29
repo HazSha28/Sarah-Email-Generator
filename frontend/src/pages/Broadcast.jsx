@@ -47,7 +47,7 @@ export default function Broadcast() {
     const fd = new FormData();
     fd.append('file', file);
     const res = await api.post('/emails/upload-image', fd);
-    const url = `http://localhost:8080${res.data.url}`;
+    const url = `https://sarah-email-generator-1.onrender.com${res.data.url}`;
     setImageUrl(url);
     setBody(prev => prev + `<br/><img src="${url}" alt="festival" style="max-width:100%;border-radius:8px;" />`);
     toast.success('Image added');
