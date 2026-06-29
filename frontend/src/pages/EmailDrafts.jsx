@@ -64,7 +64,7 @@ export default function EmailDrafts() {
           </thead>
           <tbody>
             {drafts.map(d => (
-              <tr key={d.id}>
+              <tr key={d._id}>
                 <td style={{ fontWeight: 600 }}>{d.customer?.name}</td>
                 <td style={{ color: "var(--text-muted)", fontSize: 13 }}>{d.customer?.email}</td>
                 <td><span className={`badge badge-${d.occasion?.toLowerCase()}`}>{d.occasion}</span></td>
@@ -78,10 +78,10 @@ export default function EmailDrafts() {
                     <button className="btn btn-outline" style={{ padding: "6px 11px", fontSize: 12 }} onClick={() => setSelected(d)}>
                       <Icon name="edit" size={13} color="currentColor" /> Edit
                     </button>
-                    <button className="btn btn-success" style={{ padding: "6px 11px", fontSize: 12 }} onClick={() => sendDraft(d.id)}>
+                    <button className="btn btn-success" style={{ padding: "6px 11px", fontSize: 12 }} onClick={() => sendDraft(d._id)}>
                       <Icon name="send" size={13} color="white" /> Send
                     </button>
-                    <button className="btn btn-danger" style={{ padding: "6px 11px", fontSize: 12 }} onClick={() => deleteDraft(d.id)}>
+                    <button className="btn btn-danger" style={{ padding: "6px 11px", fontSize: 12 }} onClick={() => deleteDraft(d._id)}>
                       <Icon name="trash" size={13} color="white" />
                     </button>
                   </div>
@@ -125,7 +125,7 @@ export default function EmailDrafts() {
               dangerouslySetInnerHTML={{ __html: preview.body }} />
             <div style={{ marginTop: 20, display: "flex", justifyContent: "flex-end", gap: 10 }}>
               <button className="btn btn-outline" onClick={() => setPreview(null)}>Close</button>
-              <button className="btn btn-success" onClick={() => { sendDraft(preview.id); setPreview(null); }}>
+              <button className="btn btn-success" onClick={() => { sendDraft(preview._id); setPreview(null); }}>
                 <Icon name="send" size={14} color="white" /> Send Now
               </button>
             </div>

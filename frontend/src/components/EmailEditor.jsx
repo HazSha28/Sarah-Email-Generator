@@ -12,7 +12,7 @@ export default function EmailEditor({ draft, onClose, onSaved }) {
 
   const handleSave = async () => {
     try {
-      await api.put(`/emails/drafts/${draft.id}`, { subject, body });
+      await api.put(`/emails/drafts/${draft._id}`, { subject, body });
       toast.success('Draft saved');
       onSaved();
     } catch { toast.error('Save failed'); }
