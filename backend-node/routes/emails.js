@@ -154,7 +154,10 @@ router.post('/broadcast', auth, async (req, res) => {
             sentAt: new Date()
           });
           sent++;
-        } catch { /* skip failed */ }
+          console.log(`Email sent to ${c.email}`);
+        } catch (err) {
+          console.error(`Failed to send to ${c.email}:`, err.message);
+        }
       }));
     }
     res.json({ message: `Broadcast sent to ${sent} customers` });
