@@ -132,14 +132,20 @@ router.post('/broadcast', auth, async (req, res) => {
   try {
     const { subject, body } = req.body;
     const customers = await Customer.find({ email: { $exists: true, $ne: '' } });
+
+    // Send in parallel batches of 5
     let sent = 0;
-    for (const c of customers) {
-      try {
-        const personalizedBody = body.replace(/{CustomerName}/g, c.name).replace(/{Offer}/g, '15% OFF');
-        const personalizedSubject = subject.replace(/{CustomerName}/g, c.name);
-        await sendEmail({ to: c.email, subject: personalizedSubject, html: personalizedBody });
-        sent++;
-      } catch { /* skip failed */ }
+    const batchSize = 5;
+    for (let i = 0; i < customers.length; i += batchSize) {
+      const batch = customers.slice(i, i + batchSize);
+      await Promise.all(batch.map(async (c) => {
+        try {
+          const personalizedBody = body.replace(/{CustomerName}/g, c.name).replace(/{Offer}/g, '15% OFF');
+          const personalizedSubject = subject.replace(/{CustomerName}/g, c.name);
+          await sendEmail({ to: c.email, subject: personalizedSubject, html: personalizedBody });
+          sent++;
+        } catch { /* skip failed */ }
+      }));
     }
     res.json({ message: `Broadcast sent to ${sent} customers` });
   } catch (err) {
