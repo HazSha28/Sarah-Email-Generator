@@ -116,12 +116,6 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="login-divider"><span>default credentials</span></div>
-
-        <div className="login-hint">
-          Username: <strong>admin</strong> &nbsp;&middot;&nbsp; Password: <strong>admin123</strong>
-        </div>
-
         <div className="login-copyright">
           &copy; 2026 Sarah Jewellers &middot; All rights reserved
         </div>
