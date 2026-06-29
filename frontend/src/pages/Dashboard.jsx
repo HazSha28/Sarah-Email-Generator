@@ -15,15 +15,48 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [birthdays, setBirthdays] = useState([]);
   const [anniversaries, setAnniversaries] = useState([]);
+  const [recentSent, setRecentSent] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotif, setShowNotif] = useState(false);
   const [time, setTime] = useState(new Date());
 
-  useEffect(() => {
-    api.get("/dashboard").then(r => setStats(r.data)).catch(() => {});
+  const loadDashboard = () => {
+    api.get("/dashboard").then(r => {
+      setStats(r.data);
+      // Check for newly sent emails and add notifications
+      if (r.data.recentSent?.length > 0) {
+        const stored = JSON.parse(localStorage.getItem('notif_seen') || '[]');
+        const newOnes = r.data.recentSent.filter(e => !stored.includes(e._id));
+        if (newOnes.length > 0) {
+          setNotifications(prev => [
+            ...newOnes.map(e => ({
+              id: e._id,
+              message: `Email sent to ${e.customer?.name} (${e.occasion})`,
+              time: e.sentAt ? new Date(e.sentAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''
+            })),
+            ...prev
+          ].slice(0, 10));
+        }
+        setRecentSent(r.data.recentSent);
+      }
+    }).catch(() => {});
     api.get("/customers/upcoming/birthdays").then(r => setBirthdays(r.data)).catch(() => {});
     api.get("/customers/upcoming/anniversaries").then(r => setAnniversaries(r.data)).catch(() => {});
+  };
+
+  useEffect(() => {
+    loadDashboard();
     const t = setInterval(() => setTime(new Date()), 60000);
-    return () => clearInterval(t);
+    const r = setInterval(() => loadDashboard(), 30000); // refresh every 30s
+    return () => { clearInterval(t); clearInterval(r); };
   }, []);
+
+  const clearNotifications = () => {
+    const ids = notifications.map(n => n.id);
+    localStorage.setItem('notif_seen', JSON.stringify(ids));
+    setNotifications([]);
+    setShowNotif(false);
+  };
 
   const hour = time.getHours();
   const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
@@ -44,6 +77,54 @@ export default function Dashboard() {
           <p>Here is an overview of your customer engagement activity.</p>
         </div>
         <div className="dash-banner-right">
+          {/* Notification Bell */}
+          <div style={{ position: "relative", display: "inline-block", marginBottom: 8 }}>
+            <button onClick={() => setShowNotif(!showNotif)} style={{
+              background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)",
+              borderRadius: 8, padding: "6px 10px", cursor: "pointer", position: "relative",
+              display: "flex", alignItems: "center", gap: 6, color: "#e8ddd0"
+            }}>
+              <Icon name="mail" size={16} color="#e8ddd0" />
+              {notifications.length > 0 && (
+                <span style={{
+                  position: "absolute", top: -6, right: -6, background: "#e53e3e",
+                  color: "white", borderRadius: "50%", width: 18, height: 18,
+                  fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center"
+                }}>{notifications.length}</span>
+              )}
+            </button>
+            {showNotif && (
+              <div style={{
+                position: "absolute", right: 0, top: 40, width: 300, background: "white",
+                borderRadius: 10, boxShadow: "0 8px 32px rgba(0,0,0,0.18)", zIndex: 100,
+                border: "1px solid var(--border)", overflow: "hidden"
+              }}>
+                <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontWeight: 700, fontSize: 14, color: "var(--maroon)" }}>Email Notifications</span>
+                  {notifications.length > 0 && (
+                    <button onClick={clearNotifications} style={{ fontSize: 12, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}>
+                      Clear all
+                    </button>
+                  )}
+                </div>
+                {notifications.length === 0 ? (
+                  <div style={{ padding: 20, textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+                    No new notifications
+                  </div>
+                ) : (
+                  notifications.map((n, i) => (
+                    <div key={i} style={{ padding: "10px 16px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "flex-start", gap: 10 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#1e7e4a", marginTop: 5, flexShrink: 0 }} />
+                      <div>
+                        <div style={{ fontSize: 13, color: "var(--text)", fontWeight: 500 }}>{n.message}</div>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>{n.time}</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
           <div className="dash-date-chip">
             <Icon name="calendar" size={13} color="#e8ddd0" />
             {dateStr}
@@ -83,7 +164,7 @@ export default function Dashboard() {
             <table className="dash-table">
               <thead><tr><th>Customer</th><th>Date</th></tr></thead>
               <tbody>{birthdays.map(c => (
-                <tr key={c.id}>
+                <tr key={c._id}>
                   <td><div className="cust-name">{c.name}</div><div className="cust-email">{c.email}</div></td>
                   <td><span className="badge badge-birthday">{c.birthday}</span></td>
                 </tr>
@@ -109,7 +190,7 @@ export default function Dashboard() {
             <table className="dash-table">
               <thead><tr><th>Customer</th><th>Date</th></tr></thead>
               <tbody>{anniversaries.map(c => (
-                <tr key={c.id}>
+                <tr key={c._id}>
                   <td><div className="cust-name">{c.name}</div><div className="cust-email">{c.email}</div></td>
                   <td><span className="badge badge-anniversary">{c.anniversary}</span></td>
                 </tr>
@@ -118,6 +199,37 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Recent Sent Emails */}
+      {recentSent.length > 0 && (
+        <div className="card" style={{ marginTop: 20 }}>
+          <div className="dash-card-header">
+            <div>
+              <div className="dash-card-title">Recently Sent Emails</div>
+              <div className="dash-card-sub">Last 5 emails</div>
+            </div>
+            <span className="dash-card-badge" style={{ background: "rgba(30,126,74,0.1)", color: "#1e7e4a" }}>
+              {recentSent.length} sent
+            </span>
+          </div>
+          <table className="dash-table">
+            <thead><tr><th>Customer</th><th>Occasion</th><th>Subject</th><th>Sent At</th></tr></thead>
+            <tbody>{recentSent.map(e => (
+              <tr key={e._id}>
+                <td>
+                  <div className="cust-name">{e.customer?.name}</div>
+                  <div className="cust-email">{e.customer?.email}</div>
+                </td>
+                <td><span className={`badge badge-${e.occasion?.toLowerCase()}`}>{e.occasion}</span></td>
+                <td style={{ fontSize: 13, color: "var(--text-muted)", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.subject}</td>
+                <td style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                  {e.sentAt ? new Date(e.sentAt).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—"}
+                </td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
