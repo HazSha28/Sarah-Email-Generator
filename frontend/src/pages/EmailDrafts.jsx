@@ -34,6 +34,20 @@ export default function EmailDrafts() {
     }
   };
 
+  const sendAllDrafts = async () => {
+    if (drafts.length === 0) { toast.error("No pending drafts"); return; }
+    if (!window.confirm(`Send all ${drafts.length} pending emails to customers?`)) return;
+    let sent = 0;
+    for (const d of drafts) {
+      try {
+        await api.post(`/emails/drafts/${d._id}/send`);
+        sent++;
+      } catch { /* skip failed */ }
+    }
+    toast.success(`${sent} emails sent successfully`);
+    load();
+  };
+
   const deleteDraft = async (id) => {
     if (!window.confirm("Delete this draft?")) return;
     await api.delete(`/emails/drafts/${id}`);
@@ -54,6 +68,12 @@ export default function EmailDrafts() {
             <Icon name="diamond" size={14} color="currentColor" />
             Generate Anniversaries
           </button>
+          {drafts.length > 0 && (
+            <button className="btn btn-primary" onClick={sendAllDrafts}>
+              <Icon name="send" size={14} color="white" />
+              Send All ({drafts.length})
+            </button>
+          )}
         </div>
       </div>
 
