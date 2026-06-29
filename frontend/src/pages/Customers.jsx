@@ -18,7 +18,7 @@ export default function Customers() {
   const openAdd = () => { setForm(emptyForm); setEditId(null); setShowModal(true); };
   const openEdit = (c) => {
     setForm({ name: c.name, email: c.email, phone: c.phone || "", birthday: c.birthday || "", anniversary: c.anniversary || "" });
-    setEditId(c.id);
+    setEditId(c._id);
     setShowModal(true);
   };
 
@@ -93,7 +93,7 @@ export default function Customers() {
           </thead>
           <tbody>
             {filtered.map(c => (
-              <tr key={c.id}>
+              <tr key={c._id}>
                 <td style={{ fontWeight: 600 }}>{c.name}</td>
                 <td style={{ color: "var(--text-muted)" }}>{c.email}</td>
                 <td>{c.phone || "—"}</td>
@@ -104,7 +104,7 @@ export default function Customers() {
                     <button className="btn btn-outline" style={{ padding: "6px 12px", fontSize: 12 }} onClick={() => openEdit(c)}>
                       <Icon name="edit" size={13} color="currentColor" /> Edit
                     </button>
-                    <button className="btn btn-danger" style={{ padding: "6px 12px", fontSize: 12 }} onClick={() => handleDelete(c.id)}>
+                    <button className="btn btn-danger" style={{ padding: "6px 12px", fontSize: 12 }} onClick={() => handleDelete(c._id)}>
                       <Icon name="trash" size={13} color="white" /> Delete
                     </button>
                   </div>

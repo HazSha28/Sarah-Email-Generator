@@ -25,7 +25,7 @@ export default function Templates() {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
-      if (selected) await api.put(`/templates/${selected.id}`, form);
+      if (selected) await api.put(`/templates/${selected._id}`, form);
       else await api.post('/templates', form);
       toast.success('Template saved');
       setShowModal(false);

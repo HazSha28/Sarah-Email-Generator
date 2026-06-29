@@ -21,3 +21,4 @@ backend/uploads/
 
 # Env / secrets
 backend/src/main/resources/application.properties
+backend-node/.env
