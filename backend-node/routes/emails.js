@@ -143,6 +143,16 @@ router.post('/broadcast', auth, async (req, res) => {
           const personalizedBody = body.replace(/{CustomerName}/g, c.name).replace(/{Offer}/g, '15% OFF');
           const personalizedSubject = subject.replace(/{CustomerName}/g, c.name);
           await sendEmail({ to: c.email, subject: personalizedSubject, html: personalizedBody });
+          // Save to sent records
+          await EmailDraft.create({
+            customer: c._id,
+            occasion: 'BROADCAST',
+            subject: personalizedSubject,
+            body: personalizedBody,
+            status: 'SENT',
+            type: 'BROADCAST',
+            sentAt: new Date()
+          });
           sent++;
         } catch { /* skip failed */ }
       }));

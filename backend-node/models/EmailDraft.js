@@ -6,6 +6,7 @@ const emailDraftSchema = new mongoose.Schema({
   subject:   { type: String, required: true },
   body:      { type: String, required: true },
   status:    { type: String, enum: ['PENDING', 'SENT'], default: 'PENDING' },
+  type:      { type: String, enum: ['DRAFT', 'BROADCAST'], default: 'DRAFT' },
   sentAt:    { type: Date },
   imagePath: { type: String }
 }, { timestamps: true });
